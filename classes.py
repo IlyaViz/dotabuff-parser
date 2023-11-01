@@ -67,7 +67,7 @@ class GameParser:
         tower_damages = self.soup.select(".tf-r.r-tab.r-group-3")[2::3]
         lanes = self.soup.select(".lane-outcome")
         if len(lanes) != 10:
-            raise OldGameException("Too old game")
+            raise OldGameException("Too old or too early game")
 
         heros = [x.attrs['title'] for x in heros]
         kills = self.nums_array_from_bs4_tags(kills)

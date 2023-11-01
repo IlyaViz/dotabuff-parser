@@ -13,6 +13,6 @@ if __name__ == "__main__":
             except ServerException:
                 print("Id not found or you are banned on dotabuff server")
             except OldGameException:
-                print("Cannot calculate for such an old game")
+                print("Cannot calculate for such an old or early game")
         else:
             print("Enter id!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
