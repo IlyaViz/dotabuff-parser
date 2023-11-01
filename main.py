@@ -1,6 +1,6 @@
 import os
 from classes import GameParser
-from exceptions import ServerException
+from exceptions import ServerException, OldGameException
 
 if __name__ == "__main__":
     while True:
@@ -11,6 +11,8 @@ if __name__ == "__main__":
                 parser = GameParser(id)
                 parser.get_exercises()
             except ServerException:
-                print("Try another id")
+                print("Id not found or you are banned on dotabuff server")
+            except OldGameException:
+                print("Cannot calculate for such an old game")
         else:
             print("Enter id!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")

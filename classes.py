@@ -17,7 +17,7 @@ from constants import (headers,
                        SUP_LANE_LOSE_PUNISHMENT, SUP_LANE_WIN_AWARD,
                        PARTICIPATION_AWARD_COFFICIENT, PARTICIPATION_PUNISHMENT
                        )
-from exceptions import ServerException
+from exceptions import ServerException, OldGameException
 
 class GameParser:
     def __init__(self, game_id):
@@ -52,8 +52,7 @@ class GameParser:
         return result
 
     def get_dict_of_info(self):
-        temp = self.soup.select(".image-hero")
-        heros = temp[:5]+temp[15:20]
+        heros = self.soup.select(".image-hero.image-icon.image-overlay")
         kdas = list(filter(lambda x: 'tf-25' not in x.attrs['class'] and 'tf-30' not in x.attrs['class'] and 'tf-50' not in x.attrs['class'] and not 'color-stat-gold' in x.attrs['class'], self.soup.select(".tf-r.r-tab.r-group-1")))
         kills = kdas[::3]
         deaths = kdas[1::3]
@@ -67,6 +66,8 @@ class GameParser:
         heals = self.soup.select(".tf-r.r-tab.r-group-3")[1::3]
         tower_damages = self.soup.select(".tf-r.r-tab.r-group-3")[2::3]
         lanes = self.soup.select(".lane-outcome")
+        if len(lanes) != 10:
+            raise OldGameException("Too old game")
 
         heros = [x.attrs['title'] for x in heros]
         kills = self.nums_array_from_bs4_tags(kills)
