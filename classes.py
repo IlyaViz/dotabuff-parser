@@ -217,6 +217,8 @@ class GameParser:
                 cur_to_do += (hero_deaths-DEATH_LIMIT)*DEATH_PUNISHMENT_COFFICIENT*DEATH_PUNISHMENT_X_COFFICIENT
             else:
                 cur_to_do = hero_deaths*DEATH_PUNISHMENT_COFFICIENT
+            sum_to_do_carry += cur_to_do
+            sum_to_do_sup += cur_to_do
             print(f"{ALL_BACKGROUND}Deaths: {cur_to_do}, bonus={cur_bonus}{C_BG}\n")
 
 
