@@ -4,10 +4,11 @@ import math
 from bs4 import BeautifulSoup
 from enums import PerformanceType
 from constants import (headers, 
-                       SUP_BACKGROUND, CARRY_BACKGROUND, C_BG, HERO_BACKGROUND,
+                       SUP_BACKGROUND, CARRY_BACKGROUND, C_BG, HERO_BACKGROUND, ALL_BACKGROUND,
                        GOLD_FIRST_LIMIT, GOLD_SECOND_LIMIT,
                        EXP_FIRST_LIMIT, EXP_SECOND_LIMIT,
                        PARTICIPATION_FIRST_LIMIT, PARTICIPATION_SECOND_LIMIT,
+                       DEATH_LIMIT,
                        GOLD_PUNISHMENT, GOLD_AWARD_COFFICIENT,
                        EXP_PUNISHMENT, EXP_AWARD_COFFICIENT,
                        DAMAGE_1_DIVIDER, DAMAGE_1_AWARD_COFFICIENT,
@@ -15,7 +16,8 @@ from constants import (headers,
                        DAMAGE_3_DIVIDER, DAMAGE_3_AWARD_COFFICIENT,
                        CARRY_LANE_LOSE_PUNISHMENT, CARRY_LANE_WIN_AWARD,
                        SUP_LANE_LOSE_PUNISHMENT, SUP_LANE_WIN_AWARD,
-                       PARTICIPATION_AWARD_COFFICIENT, PARTICIPATION_PUNISHMENT
+                       PARTICIPATION_AWARD_COFFICIENT, PARTICIPATION_PUNISHMENT,
+                       DEATH_PUNISHMENT_COFFICIENT, DEATH_PUNISHMENT_X_COFFICIENT
                        )
 from exceptions import ServerException, OldGameException
 
@@ -120,6 +122,7 @@ class GameParser:
             cur_bonus = 0
             hero_team = 0 if num <= 4 else 1
             hero_kills = info[PerformanceType.kills][num]
+            hero_deaths = info[PerformanceType.deaths][num]
             hero_assists = info[PerformanceType.assists][num]
             hero_gpm = info[PerformanceType.gpms][num]
             hero_epm = info[PerformanceType.epms][num]
@@ -204,6 +207,18 @@ class GameParser:
                 cur_bonus = (hero_participation_procent-PARTICIPATION_SECOND_LIMIT)*PARTICIPATION_AWARD_COFFICIENT
                 sum_bonus_sup += cur_bonus
             print(f"{SUP_BACKGROUND}Participation: {cur_to_do}, bonus={cur_bonus}{C_BG}\n")
+
+            #for all
+            #deaths
+            cur_bonus = 0
+            cur_to_do = 0
+            if hero_deaths > DEATH_LIMIT:
+                cur_to_do = DEATH_LIMIT*DEATH_PUNISHMENT_COFFICIENT
+                cur_to_do += (hero_deaths-DEATH_LIMIT)*DEATH_PUNISHMENT_COFFICIENT*DEATH_PUNISHMENT_X_COFFICIENT
+            else:
+                cur_to_do = hero_deaths*DEATH_PUNISHMENT_COFFICIENT
+            print(f"{ALL_BACKGROUND}Deaths: {cur_to_do}, bonus={cur_bonus}{C_BG}\n")
+
 
             print(f"\033[4mTOTAL(CARRY)\033[0m: {sum_to_do_carry}, bonus={sum_bonus_carry}")
             print(f"\033[4mTOTAL(SUPPORT)\033[0m: {sum_to_do_sup}, bonus={sum_bonus_sup}\n")
