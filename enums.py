@@ -14,3 +14,7 @@ class PerformanceType(enum.Enum):
     heals = 10
     tower_damages = 11
     lanes = 12
+
+class Team(enum.Enum):
+    radiant = 0
+    dire = 1

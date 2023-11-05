@@ -2,7 +2,7 @@ import requests
 import copy
 import math
 from bs4 import BeautifulSoup
-from enums import PerformanceType
+from enums import PerformanceType, Team
 from constants import (headers, 
                        SUP_BACKGROUND, CARRY_BACKGROUND, C_BG, HERO_BACKGROUND, ALL_BACKGROUND,
                        GOLD_FIRST_LIMIT, GOLD_SECOND_LIMIT,
@@ -17,7 +17,8 @@ from constants import (headers,
                        CARRY_LANE_LOSE_PUNISHMENT, CARRY_LANE_WIN_AWARD,
                        SUP_LANE_LOSE_PUNISHMENT, SUP_LANE_WIN_AWARD,
                        PARTICIPATION_AWARD_COFFICIENT, PARTICIPATION_PUNISHMENT,
-                       DEATH_PUNISHMENT_COFFICIENT, DEATH_PUNISHMENT_X_COFFICIENT
+                       DEATH_PUNISHMENT_COFFICIENT, DEATH_PUNISHMENT_X_COFFICIENT,
+                       MATCH_LOSE_PUNISHMENT,
                        )
 from exceptions import ServerException, OldGameException
 
@@ -52,6 +53,10 @@ class GameParser:
             result.pop(5)
             result.pop(-1)
         return result
+
+    def get_winner_team(self):
+        match_result = self.soup.select(".match-result")[0]
+        return Team.radiant if "radiant" in match_result.attrs['class'] else Team.dire
 
     def get_dict_of_info(self):
         heros = self.soup.select(".image-hero.image-icon.image-overlay")
@@ -112,6 +117,7 @@ class GameParser:
         info = self.get_dict_of_info()
 
         total_damages=[info[PerformanceType.hero_damages][x] + info[PerformanceType.tower_damages][x] for x in range(10)]        
+        winner_team = self.get_winner_team()
         for num, hero in enumerate(info[PerformanceType.heros]):
             print(f"{HERO_BACKGROUND}{hero}{C_BG}\n")
             sum_to_do_carry = 0
@@ -120,7 +126,8 @@ class GameParser:
             sum_bonus_sup = 0
             cur_to_do = 0
             cur_bonus = 0
-            hero_team = 0 if num <= 4 else 1
+            hero_team_name = Team.radiant if num <= 4 else Team.dire
+            hero_team_value = hero_team_name.value
             hero_kills = info[PerformanceType.kills][num]
             hero_deaths = info[PerformanceType.deaths][num]
             hero_assists = info[PerformanceType.assists][num]
@@ -130,7 +137,7 @@ class GameParser:
             hero_tower_damage = info[PerformanceType.tower_damages][num]
             hero_lane = info[PerformanceType.lanes][num]
 
-            team_total_kills = sum(info[PerformanceType.kills][hero_team*5:hero_team*5+5])
+            team_total_kills = sum(info[PerformanceType.kills][hero_team_value*5:hero_team_value*5+5])
 
             hero_total_damage = hero_hero_damage+hero_tower_damage
             hero_participation = hero_kills+hero_assists
@@ -168,7 +175,7 @@ class GameParser:
             else:
                 cur_to_do = hero_total_damage_diff/DAMAGE_2_DIVIDER*DAMAGE_2_AWARD_COFFICIENT
                 sum_to_do_carry += cur_to_do
-                top_two_team_total_damage = self.get_specific_top_value(2, total_damages[hero_team*5:hero_team*5+5]) 
+                top_two_team_total_damage = self.get_specific_top_value(2, total_damages[hero_team_value*5:hero_team_value*5+5]) 
                 if hero_total_damage > top_two_team_total_damage:
                     cur_bonus = (hero_total_damage-top_two_team_total_damage)/DAMAGE_3_DIVIDER*DAMAGE_3_AWARD_COFFICIENT
                     sum_bonus_carry += cur_bonus
@@ -220,6 +227,15 @@ class GameParser:
             sum_to_do_carry += cur_to_do
             sum_to_do_sup += cur_to_do
             print(f"{ALL_BACKGROUND}Deaths: {cur_to_do}, bonus={cur_bonus}{C_BG}\n")
+
+            #match result
+            cur_bonus = 0
+            cur_to_do = 0
+            if hero_team_name != winner_team:
+                cur_to_do = MATCH_LOSE_PUNISHMENT
+            sum_to_do_carry += cur_to_do
+            sum_to_do_sup += cur_to_do
+            print(f"{ALL_BACKGROUND}Match result: {cur_to_do}, bonus={cur_bonus}{C_BG}\n")
 
 
             print(f"\033[4mTOTAL(CARRY)\033[0m: {sum_to_do_carry}, bonus={sum_bonus_carry}")
