@@ -233,8 +233,8 @@ class GameParser:
             cur_to_do = 0
             if hero_team_name != winner_team:
                 cur_to_do = MATCH_LOSE_PUNISHMENT
-            sum_to_do_carry += cur_to_do
-            sum_to_do_sup += cur_to_do
+                sum_to_do_carry += cur_to_do
+                sum_to_do_sup += cur_to_do
             print(f"{ALL_BACKGROUND}Match result: {cur_to_do}, bonus={cur_bonus}{C_BG}\n")
 
 
